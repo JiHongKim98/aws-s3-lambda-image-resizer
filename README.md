@@ -6,7 +6,7 @@ This Lambda will be invoked when a file is uploaded to a particular bucket. It w
 
 Before getting started, ensure you have the following:
 
-1. **AWS Account**: You need an AWS account with access to S3 and Lambda services.
+1. **S3 Object Lambda Setup**: You need an S3 bucket and an S3 Object Lambda access point configured. This includes creating an S3 Object Lambda function and integrating it with your S3 bucket to allow image resizing on the fly.
 2. **Node.js 20.x Runtime**: This Lambda function is designed to run in an AWS environment that uses the Node.js 20.x runtime. Ensure your AWS Lambda function is configured with Node.js 20.x as the runtime environment.
 
 ## Getting Started
@@ -46,10 +46,10 @@ This will create a file called `function.zip` that contains everything required 
 
 ## Example Query
 
-To test the resizing functionality with specific dimensions, you can call the Lambda function through an API Gateway or directly through the generated URL. The following is an example request:
+To test the resizing functionality with specific dimensions, you can call the Lambda function through the S3 Object Lambda URL (usually integrated with CloudFront). The following is an example request:
 
 ```
 https://your-cloudfront-url.com/image.jpg?w=100&h=100
 ```
 
-This will resize the uploaded image to 200x200 pixels.
+This will resize the uploaded image to 100x100 pixels.
