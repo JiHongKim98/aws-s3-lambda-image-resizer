@@ -16,8 +16,11 @@ Before getting started, ensure you have the following:
 First, you'll need to clone the repository to your local machine:
 
 ```bash
-  git clone https://github.com/JiHongKim98/aws-s3-lambda-image-resizer.git
-  cd aws-s3-lambda-image-resizer
+# Clone the repository to your local machine using the git command
+git clone https://github.com/JiHongKim98/aws-s3-lambda-image-resizer.git
+
+# Navigate to the repository directory to begin working
+cd aws-s3-lambda-image-resizer
 ```
 
 This will download the code to your local machine so you can start working on it.
@@ -29,7 +32,10 @@ Next, install the required dependencies for the Lambda function. These include `
 Use the following command to install the necessary packages, specifying the architecture and platform for AWS Lambda:
 
 ```bash
-npm install --arch=x64 --platform=linux --target=16x sharp axios
+# Install the required dependencies for the Lambda function in the AWS Lambda environment.
+# 'sharp' is used for image processing, and 'axios' is used to make HTTP requests.
+# The --arch, --platform, and --target options are specified to ensure compatibility with AWS Lambda's environment.
+npm install --arch=x64 --platform=linux --target=20.x sharp axios
 ```
 
 This ensures that the sharp library is properly configured to run in the AWS Lambda environment (which runs on Amazon Linux).
@@ -39,6 +45,8 @@ This ensures that the sharp library is properly configured to run in the AWS Lam
 Once you have installed the dependencies, you need to package the code and libraries into a zip file to be deployed to AWS Lambda. The following command will zip up your source code and dependencies:
 
 ```bash
+# Package the source code and dependencies into a zip file for deployment to AWS Lambda.
+# This command will create the 'function.zip' file, which contains everything needed for the Lambda function to run.
 npm run package
 ```
 
@@ -48,7 +56,10 @@ This will create a file called `function.zip` that contains everything required 
 
 To test the resizing functionality with specific dimensions, you can call the Lambda function through the S3 Object Lambda URL (usually integrated with CloudFront). The following is an example request:
 
-```
+```bash
+# Call the Lambda function through the S3 Object Lambda URL.
+# The 'w' and 'h' query parameters adjust the width and height of the image, respectively.
+# The URL will usually be integrated with CloudFront for better performance.
 https://your-cloudfront-url.com/image.jpg?w=100&h=100
 ```
 
