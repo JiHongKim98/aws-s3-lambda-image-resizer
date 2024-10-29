@@ -40,11 +40,31 @@ exports.handler = async (event) => {
   let transformedImage;
   try {
     const image = sharp(originalImage);
+
+    const metadata = await image.metadata();
+    const format = metadata.format;
+
     const width = parseInt(queryParams.get("w")) || null;
     const height = parseInt(queryParams.get("h")) || null;
+    const quality = Math.max(
+      1,
+      Math.min(parseInt(queryParams.get("q")) || 85, 100)
+    );
 
-    if (width || height) {
-      transformedImage = await image.resize(width, height).toBuffer();
+    const formatHandlers = {
+      png: (width, height, quality) =>
+        image.resize(width, height).png({ quality }).toBuffer(),
+      jpeg: (width, height, quality) =>
+        image.resize(width, height).jpeg({ quality }).toBuffer(),
+      webp: (width, height, quality) =>
+        image.resize(width, height).webp({ quality }).toBuffer(),
+      default: (width, height) => image.resize(width, height).toBuffer(),
+    };
+
+    if (width || height || quality) {
+      transformedImage = await (
+        formatHandlers[format] || formatHandlers.default
+      )(width, height, quality);
     } else {
       transformedImage = originalImage;
     }
