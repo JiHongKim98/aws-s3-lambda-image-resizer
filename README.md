@@ -1,6 +1,8 @@
 # aws-s3-lambda-image-resizer
 
-This Lambda function is triggered by a `GET` request to an S3 Object Lambda access point. It retrieves an image from the specified S3 bucket, resizes it based on query parameters, and returns the modified image as a response.
+[English](./README.md) / [한국어](./README_ko.md) / [적용 방법](https://h0ng.dev/image-load-optimize/#S3-Object-Lambda를-통한-이미지-리사이징-적용)
+
+This Lambda function is triggered by requests to an S3 Object Lambda Access Point. It retrieves an image from the specified S3 bucket, resizes it based on query parameters, and returns the modified image as a response.
 
 ## Features
 
@@ -19,7 +21,6 @@ To test the resizing functionality with specific dimensions and quality, you can
 ```bash
 # Call the Lambda function through the CloudFront URL.
 # The 'w', 'h', and 'q' query parameters specify the desired width, height, and quality of the image, respectively.
-# CloudFront caches and delivers resized images efficiently.
 
 https://your-cloudfront-url.com/path/to/image?w=200&h=200&q=80
 ```
@@ -30,7 +31,7 @@ This request resizes the image stored in the S3 bucket to 200x200 pixels with 80
 
 - **Width (`w`) and Height (`h`)**:
 
-  The w and h query parameters control the width and height of the resized image. If one of these values is provided, the image resizes based on the specified dimension, preserving the original aspect ratio if only one of `w` or `h` is set.
+  The `w` and `h` query parameters control the width and height of the resized image. If one of these values is provided, the image resizes based on the specified dimension, preserving the original aspect ratio if only one of `w` or `h` is set.
 
 - **Quality (`q`)**:
 
@@ -40,7 +41,7 @@ This request resizes the image stored in the S3 bucket to 200x200 pixels with 80
 
   If `w`, `h`, and `q` are all omitted, the function returns the original image without any transformations. This ensures that images are only processed when necessary, preserving original data and minimizing processing time.
 
-These configurations allow for dynamic resizing, quality adjustment, and efficient caching, optimizing performance and flexibility in delivering images.
+These configurations allow for dynamic resizing, quality adjustment in delivering images.
 
 ## Prerequisites
 
@@ -48,7 +49,7 @@ Before getting started, ensure you have the following:
 
 1. **S3 Object Lambda Setup**:
 
-   You need an S3 bucket and an S3 Object Lambda access point configured. This includes creating an S3 Object Lambda function and integrating it with your S3 bucket to allow image resizing on the fly.
+   You need an S3 bucket and an S3 Object Lambda configured. This includes creating an S3 Object Lambda function and integrating it with your S3 bucket to allow image resizing on the fly.
 
 2. **Node.js 20.x Runtime**:
 
