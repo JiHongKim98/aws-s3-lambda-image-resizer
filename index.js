@@ -7,6 +7,9 @@ const sharp = require("sharp");
 
 const s3 = new S3Client();
 
+const DEFAULT_QUALITY = parseInt(process.env.DEFAULT_QUALITY) || 85;
+const DEFAULT_CONTENT_TYPE = process.env.DEFAULT_CONTENT_TYPE || "image/webp";
+
 exports.handler = async (event) => {
   const { outputRoute, outputToken, inputS3Url } = event.getObjectContext;
 
@@ -15,7 +18,7 @@ exports.handler = async (event) => {
 
   try {
     const { data, headers } = await fetchImage(inputS3Url);
-    const originContentType = headers["content-type"] || "image/webp";
+    const originContentType = headers["content-type"] || DEFAULT_CONTENT_TYPE;
 
     const transformedImage = await processResize(data, queryParams);
 
@@ -86,7 +89,7 @@ const sendResponse = async (body, contentType, requestRoute, requestToken) => {
 };
 
 const clamp = (value, min, max) => {
-  if (!value) return 85;
+  if (!value) return DEFAULT_QUALITY;
   return Math.max(min, Math.min(value, max));
 };
 
