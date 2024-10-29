@@ -23,13 +23,11 @@ exports.handler = async (event) => {
     originContentsType = response.headers["content-type"] || "image/webp";
   } catch (err) {
     console.error(
-      `\n| >> MESSAGE: S3로 부터 원본 이미지를 가져오는데 실패함
-      \n| >> REQUEST_URL: ${inputS3Url}
-      \n| >> ERROR_DETAILS: ${err}`
+      `\n| >> MESSAGE: S3로 부터 원본 이미지를 가져오는데 실패함\n| >> REQUEST_URL: ${inputS3Url}\n| >> ERROR_DETAILS: ${err}`
     );
     return {
       statusCode: 500,
-      body: "Could not fetch image from S3",
+      body: "Failed to fetch image from S3",
     };
   }
 
@@ -70,13 +68,11 @@ exports.handler = async (event) => {
     }
   } catch (err) {
     console.error(
-      `\n| >> MESSAGE: 이미지 리사이징 실패
-      \n| >> ERROR_DETAILS: ${err}
-      `
+      `\n| >> MESSAGE: 이미지 리사이징 실패\n| >> ERROR_DETAILS: ${err}`
     );
     return {
       statusCode: 500,
-      body: "Could not resize image",
+      body: "Failed to resize image",
     };
   }
 
@@ -96,8 +92,7 @@ exports.handler = async (event) => {
     await s3.send(writeResponseCommand);
   } catch (err) {
     console.error(
-      `\n| >> MESSAGE: 리사이징된 이미지 응답을 보내는 중 오류 발생
-      \n| >> ERROR_DETAILS: ${err}`
+      `\n| >> MESSAGE: 리사이징된 이미지 응답을 보내는 중 오류 발생\n| >> ERROR_DETAILS: ${err}`
     );
     return {
       statusCode: 500,
