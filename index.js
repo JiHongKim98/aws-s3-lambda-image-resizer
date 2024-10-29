@@ -8,95 +8,88 @@ const sharp = require("sharp");
 const s3 = new S3Client();
 
 exports.handler = async (event) => {
-  const getObjectContext = event.getObjectContext;
-  const requestRoute = getObjectContext.outputRoute;
-  const requestToken = getObjectContext.outputToken;
-  const inputS3Url = getObjectContext.inputS3Url;
-
-  let originalImage;
-  let originContentsType;
-  try {
-    const response = await axios.get(inputS3Url, {
-      responseType: "arraybuffer",
-    });
-    originalImage = response.data;
-    originContentsType = response.headers["content-type"] || "image/webp";
-  } catch (err) {
-    console.error(
-      `\n| >> MESSAGE: S3로 부터 원본 이미지를 가져오는데 실패함\n| >> REQUEST_URL: ${inputS3Url}\n| >> ERROR_DETAILS: ${err}`
-    );
-    return {
-      statusCode: 500,
-      body: "Failed to fetch image from S3",
-    };
-  }
+  const { outputRoute, outputToken, inputS3Url } = event.getObjectContext;
 
   const userRequestUrl = event.userRequest.url;
-  const url = new URL(userRequestUrl);
-  const queryParams = new URLSearchParams(url.search);
+  const queryParams = new URLSearchParams(new URL(userRequestUrl).search);
 
-  let transformedImage;
   try {
-    const image = sharp(originalImage);
+    const { data, headers } = await fetchImage(inputS3Url);
+    const originContentType = headers["content-type"] || "image/webp";
 
-    const metadata = await image.metadata();
-    const format = metadata.format;
+    const transformedImage = await processResize(data, queryParams);
 
-    const width = parseInt(queryParams.get("w")) || null;
-    const height = parseInt(queryParams.get("h")) || null;
-    const quality = Math.max(
-      1,
-      Math.min(parseInt(queryParams.get("q")) || 85, 100)
+    await sendResponse(
+      transformedImage,
+      originContentType,
+      outputRoute,
+      outputToken
     );
-
-    const formatHandlers = {
-      png: (width, height, quality) =>
-        image.resize(width, height).png({ quality }).toBuffer(),
-      jpeg: (width, height, quality) =>
-        image.resize(width, height).jpeg({ quality }).toBuffer(),
-      webp: (width, height, quality) =>
-        image.resize(width, height).webp({ quality }).toBuffer(),
-      default: (width, height) => image.resize(width, height).toBuffer(),
-    };
-
-    if (width || height || quality) {
-      transformedImage = await (
-        formatHandlers[format] || formatHandlers.default
-      )(width, height, quality);
-    } else {
-      transformedImage = originalImage;
-    }
   } catch (err) {
-    console.error(
-      `\n| >> MESSAGE: 이미지 리사이징 실패\n| >> ERROR_DETAILS: ${err}`
-    );
+    logError("An error occurred while processing the image", err);
     return {
       statusCode: 500,
-      body: "Failed to resize image",
+      body: "Image processing failed",
     };
   }
+};
 
+const fetchImage = async (url) => {
+  try {
+    return await axios.get(url, { responseType: "arraybuffer" });
+  } catch (err) {
+    throw new Error(`Failed to fetch image from S3: ${err.message}`);
+  }
+};
+
+const processResize = async (originImage, queryParams) => {
+  const image = sharp(originImage);
+  const { format } = await image.metadata();
+
+  const width = parseInt(queryParams.get("w")) || null;
+  const height = parseInt(queryParams.get("h")) || null;
+  const quality = parseInt(queryParams.get("q")) || null;
+
+  if (!width && !height && !quality) return originImage;
+
+  return await formatImage(image, format, width, height, quality);
+};
+
+const formatImage = async (image, format, width, height, quality) => {
+  quality = clamp(quality, 1, 100);
+
+  switch (format) {
+    case "jpeg":
+      return await image.resize(width, height).jpeg({ quality }).toBuffer();
+    case "png":
+      return await image.resize(width, height).png({ quality }).toBuffer();
+    case "webp":
+      return await image.resize(width, height).webp({ quality }).toBuffer();
+    default:
+      return await image.resize(width, height).toBuffer();
+  }
+};
+
+const sendResponse = async (body, contentType, requestRoute, requestToken) => {
   try {
     const writeResponseParams = {
       RequestRoute: requestRoute,
       RequestToken: requestToken,
-      Body: transformedImage,
+      Body: body,
       StatusCode: 200,
-      Headers: {
-        "Content-Type": originContentsType,
-      },
+      Headers: { "Content-Type": contentType },
     };
-    const writeResponseCommand = new WriteGetObjectResponseCommand(
-      writeResponseParams
-    );
-    await s3.send(writeResponseCommand);
+    await s3.send(new WriteGetObjectResponseCommand(writeResponseParams));
   } catch (err) {
-    console.error(
-      `\n| >> MESSAGE: 리사이징된 이미지 응답을 보내는 중 오류 발생\n| >> ERROR_DETAILS: ${err}`
-    );
-    return {
-      statusCode: 500,
-      body: "Failed to send resized image response",
-    };
+    throw new Error(`Failed to send response: ${err.message}`);
   }
+};
+
+const clamp = (value, min, max) => {
+  if (!value) return 85;
+  return Math.max(min, Math.min(value, max));
+};
+
+const logError = (message, err) => {
+  console.error(`\n| >> MESSAGE: ${message}\n| >> ERROR_DETAILS: ${err}`);
 };
