@@ -1,6 +1,6 @@
 # aws-s3-lambda-image-resizer
 
-[English](./README.md) / [한국어](./README_ko.md) / [Full Documentation (한국어)](https://h0ng.dev/image-load-optimize/#S3-Object-Lambda를-통한-이미지-리사이징-적용)
+[English](./README.md) / [한국어](./README_ko.md) / [블로그 게시물](https://hongkim.dev/image-load-optimize/)
 
 위 리포지토리에서 구현된 Lambda Function는 S3 Object Lambda Access Point에 의해 트리거되고, 지정된 S3 Bucket에서 원본 이미지를 가져와 쿼리 파라미터에 따라 크기 및 화질이 조정된 이미지를 반환한다.
 
